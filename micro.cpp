@@ -44,6 +44,7 @@ void dodge_layer(cv::Mat & base, cv::Mat & top, cv::Mat & dst)
  */
 void sketch(cv::Mat & image, cv::Mat & dst, float smoothing_param) {
     
+    Mat grad; 
     int LowH = 0;
     int HighH = 255;
 
@@ -53,14 +54,9 @@ void sketch(cv::Mat & image, cv::Mat & dst, float smoothing_param) {
     int LowV = 0;
     int HighV = 75;
 
-    createTrackbar("LowH", "Control", &LowH, 255);
-    createTrackbar("HighH", "Control", &HighH, 255);
-
-    createTrackbar("LowS", "Control", &LowS, 255);
-    createTrackbar("HighS", "Control", &HighS, 255);
-
-    createTrackbar("LowV", "Control", &LowV, 75);
-    createTrackbar("HighV", "Control", &HighV, 75);
+    int scale = 1;
+    int delta = 0;
+    int ddepth = CV_16S;
 
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
@@ -84,8 +80,19 @@ void sketch(cv::Mat & image, cv::Mat & dst, float smoothing_param) {
     cv::Mat inverted_gray = cv::Scalar::all(255) - img_hist_equalized;
     
     // Blur the inverted image
-    //cv::GaussianBlur(inverted_gray, inverted_gray, cv::Size(0,0), smoothing_param);
-    cv::addWeighted(inverted_gray, 5, imgC, -5, 0, img_hist_equalized);
+    cv::GaussianBlur(inverted_gray, inverted_gray, cv::Size(0,0), smoothing_param);
+    
+    Mat grad_x, grad_y;
+    Mat abs_grad_x, abs_grad_y;
+
+    Sobel(img_hist_equalized, grad_x, ddepth, 1, 0, 3, scale, delta, smoothing_param);
+    convertScaleAbs(grad_x, abs_grad_x);
+
+    Sobel(img_hist_equalized, grad_y, ddepth, 0, 1, 3, scale, delta, smoothing_param);
+    convertScaleAbs(grad_y, abs_grad_y);
+
+    addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
+    //cv::addWeighted(inverted_gray, 5, imgC, -5, 0, img_hist_equalized);
     // Apply dodge between the gray image and the inverted gray
     //dodge_layer(gray_image, inverted_gray, dst);
 }
@@ -123,7 +130,7 @@ int main(int argc, char * argv[])
                 if(stat((o_dir + "/c" + file_name).c_str(), &buffer) != 0){
                     // read and sketch image, write to specified directory with prefix 'c'
                     cv::Mat image = cv::imread(s_dir + "/" + file_name); 
-                    sketch(image,image,smoothing_param);
+                    sketch(grad,grad,smoothing_param);
                     cv::imwrite(o_dir + "/c" + file_name,image);
                     fprintf(stdout, "Finished processing image %s\n", file_name.c_str());
                 }
