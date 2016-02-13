@@ -58,6 +58,8 @@ void sketch(cv::Mat & image, cv::Mat & dst, float smoothing_param) {
     int delta = 0;
     int ddepth = CV_16S;
 
+    char* window_name = "Hello :)";
+
     Mat imgHSV;
     cvtColor(image, imgHSV, COLOR_BGR2HSV);
 
@@ -94,7 +96,7 @@ void sketch(cv::Mat & image, cv::Mat & dst, float smoothing_param) {
     addWeighted(abs_grad_x, 0.5, abs_grad_y, 0.5, 0, grad);
     //cv::addWeighted(inverted_gray, 5, imgC, -5, 0, img_hist_equalized);
     // Apply dodge between the gray image and the inverted gray
-    //dodge_layer(gray_image, inverted_gray, dst);
+    dodge_layer(grad, inverted_gray, dst);
 }
 
 int main(int argc, char * argv[])
