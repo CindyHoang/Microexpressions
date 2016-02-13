@@ -132,8 +132,8 @@ int main(int argc, char * argv[])
                 if(stat((o_dir + "/c" + file_name).c_str(), &buffer) != 0){
                     // read and sketch image, write to specified directory with prefix 'c'
                     cv::Mat image = cv::imread(s_dir + "/" + file_name); 
-                    sketch(grad,grad,smoothing_param);
-                    cv::imwrite(o_dir + "/c" + file_name,image);
+                    sketch(image,image,smoothing_param);
+                    cv::imwrite(o_dir + "/c" + file_name,grad);
                     fprintf(stdout, "Finished processing image %s\n", file_name.c_str());
                 }
             }
